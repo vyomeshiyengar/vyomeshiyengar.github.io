@@ -83,6 +83,18 @@ if (sections.length > 0) {
 
   const getNavTarget = section => section.dataset.nav || section.id;
 
+  const setActiveFromHash = () => {
+    const hash = window.location.hash.replace("#", "");
+    const section = sections.find(item => item.id === hash || getNavTarget(item) === hash);
+
+    if (!section) {
+      return false;
+    }
+
+    setActive(getNavTarget(section));
+    return true;
+  };
+
   const syncActiveSection = () => {
     const anchor = window.scrollY + window.innerHeight * 0.42;
     const active = sections.reduce((current, section) => {
@@ -102,8 +114,15 @@ if (sections.length > 0) {
 
   window.addEventListener("scroll", requestSync, { passive: true });
   window.addEventListener("resize", requestSync);
-  window.addEventListener("hashchange", requestSync);
-  syncActiveSection();
+  window.addEventListener("hashchange", () => {
+    if (!setActiveFromHash()) {
+      requestSync();
+    }
+  });
+
+  if (!setActiveFromHash()) {
+    syncActiveSection();
+  }
 } else if (mobileNavLabel) {
   const activeLink = links.find(link => link.classList.contains("is-active"));
   mobileNavLabel.textContent = activeLink ? linkLabel(activeLink) : "Menu";
